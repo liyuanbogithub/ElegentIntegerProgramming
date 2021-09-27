@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-
+from DataLib import ORLibaryData
 
 def heuristic_solve(problem):
     problem.Params.OutputFlag = 0
@@ -66,18 +66,19 @@ class Node:
     
 
 model = gp.Model("mip1")
-x = model.addVar(vtype=GRB.BINARY, name="x")
-y = model.addVar(vtype=GRB.BINARY, name="y")
-z = model.addVar(vtype=GRB.BINARY, name="z")
+x = model.addVars(10, name = 'x', vtype = GRB.BINARY)
 
-model.setObjective(x + y + 2 * z, GRB.MAXIMIZE)
-model.addConstr(x + 2 * y + 3 * z <= 4, "c0")
-model.addConstr(x + y >= 1, "c1")
-model.addConstr(x + z == 2, "c2")
-model.update()
+model.setObjective(x[0] + x[1] + 2*x[2] + 2*x[8] + x[9], GRB.MAXIMIZE)
+model.addConstr(x[0] + 2*x[1] + 3*x[2] + 5*x[3] + 3*x[4] <= 8, "c0")
+model.addConstr(2*x[3] + 2*x[4] + 3*x[5] + 5*x[6] + 3*x[7] <= 10, "c1")
+model.addConstr(x[7] + x[8] + 3*x[9] <= 4, "c2")
+model.addConstr(2*x[0] + x[2] + 3*x[7] + 3*x[8] + 2*x[9] <= 8, "c3")
+model.addConstr(x[7] + x[8] + 3*x[9] >= 1, "c4")
+model.addConstr(2*x[4] + 2*x[5] + x[6] + 5*x[7] + 3*x[8] >= 4, "c5")
+model.optimize()
 model.write("model_integer.lp")
 
-upper_bound, lower_bound = float('inf'), 0
+upper_bound, lower_bound = float('inf'), 0  
 model_relax = model.relax()
 root_node = Node(model = model_relax, upper_bound = upper_bound, lower_bound = lower_bound, candidate_vars = [i for i in range(model.NumVars)])
 candidate_node = [root_node]
